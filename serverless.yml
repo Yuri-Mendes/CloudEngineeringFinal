@@ -1,0 +1,70 @@
+service: pizzaria
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+functions:
+  processPedido:
+    handler: handler.processPedido
+    events:
+      - s3:
+          bucket: "seu-bucket-pizzaria"
+          event: s3:ObjectCreated:*
+          filter:
+            S3Key:
+              rules:
+                - name: prefix
+                  value: "em-preparacao/"
+      - s3:
+          bucket: "seu-bucket-pizzaria"
+          event: s3:ObjectCreated:*
+          filter:
+            S3Key:
+              rules:
+                - name: prefix
+                  value: "pronto/"
+  processSQSPreparacao:
+    handler: handler.processSQSPreparacao
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSEmPreparacao
+              - Arn
+          batchSize: 1
+  processSQSPronto:
+    handler: handler.processSQSPronto
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSPronto
+              - Arn
+          batchSize: 1
+resources:
+  Resources:
+    SQSEmPreparacao:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: em-preparacao-pizzaria
+    SQSPronto:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: pronto-pizzaria
+    DynamoDBPedidos:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: pedidos-pizzaria
+        AttributeDefinitions:
+          - AttributeName: pedido
+            AttributeType: S
+          - AttributeName: datetime
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pedido
+            KeyType: HASH
+          - AttributeName: datetime
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
