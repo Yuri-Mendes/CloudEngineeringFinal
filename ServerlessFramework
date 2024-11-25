@@ -7,3 +7,6 @@ cd pizzaria-serverless
 /* Criação novo serviço com o Serverless Framework*/
 serverless create --template aws-nodejs --path pizzaria
 cd pizzaria
+
+/* Deploy da infraestrutura */
+serverless deploy
