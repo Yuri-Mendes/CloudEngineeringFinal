@@ -1,0 +1,9 @@
+/* Instalação Serverless Framework */
+npm install -g serverless
+/* Criação Projeto Serverless */
+/* Criação Pasta */
+mkdir pizzaria-serverless
+cd pizzaria-serverless
+/* Criação novo serviço com o Serverless Framework*/
+serverless create --template aws-nodejs --path pizzaria
+cd pizzaria
